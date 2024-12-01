@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flower Personality Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Pacifico&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Caveat', cursive;
+        }
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(130deg, white, pink);
+            z-index: -2;
+        }
+        .hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .heart {
+            position: absolute;
+            opacity: 0.5;
+            animation: float linear infinite;
+        }
+        @keyframes float {
+            0% { 
+                transform: translateY(100%) rotate(0deg);
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 0.6;
+            }
+            100% { 
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0.3;
+            }
+        }
+        .quiz-container {
+            width: 500px;
+            padding: 30px;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        h1 {
+            font-family: 'Pacifico', cursive;
+            color: #ff69b4;
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        .question {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        button {
+            font-family: 'Caveat', cursive;
+            font-size: 1.2rem;
+            padding: 12px;
+            background-color: #ff69b4;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        button:hover {
+            transform: scale(1.05);
+            background-color: #ff1493;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 1.5rem;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <div class="hearts-container" id="hearts-container"></div>
+    <div class="quiz-container">
+        <h1>What Flower Are You?</h1>
+        <div id="quiz">
+            <div class="question" id="question"></div>
+            <div class="options" id="options"></div>
+        </div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const quizData = {
+            questions: [
+                {
+                    text: "What's your ideal weekend?",
+                    options: [
+                        { text: "Relaxing at home", flower: "Lavender" },
+                        { text: "Adventuring outdoors", flower: "Sunflower" },
+                        { text: "Socializing with friends", flower: "Rose" },
+                        { text: "Quiet reading", flower: "Lily" }
+                    ]
+                },
+                {
+                    text: "Pick a color that represents you:",
+                    options: [
+                        { text: "Purple", flower: "Lavender" },
+                        { text: "Yellow", flower: "Sunflower" },
+                        { text: "Red", flower: "Rose" },
+                        { text: "White", flower: "Lily" }
+                    ]
+                },
+                {
+                    text: "What's your personality type?",
+                    options: [
+                        { text: "Calm and peaceful", flower: "Lavender" },
+                        { text: "Bright and energetic", flower: "Sunflower" },
+                        { text: "Passionate and romantic", flower: "Rose" },
+                        { text: "Elegant and pure", flower: "Lily" }
+                    ]
+                }
+            ],
+            results: {
+                "Lavender": {
+                    description: "You're a Lavender! Calm, soothing, and introspective. You bring peace to those around you and value tranquility."
+                },
+                "Sunflower": {
+                    description: "You're a Sunflower! Bright, cheerful, and always looking on the sunny side of life. Your energy is contagious!"
+                },
+                "Rose": {
+                    description: "You're a Rose! Passionate, complex, and beautiful. You have depth and aren't afraid to show your emotions."
+                },
+                "Lily": {
+                    description: "You're a Lily! Elegant, pure, and sophisticated. You have a quiet strength and grace that others admire."
+                }
+            }
+        };
+
+        let currentQuestion = 0;
+        let flowerScores = {
+            "Lavender": 0,
+            "Sunflower": 0,
+            "Rose": 0,
+            "Lily": 0
+        };
+
+        function createHeart() {
+            const heart = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            heart.setAttribute("width", "30");
+            heart.setAttribute("height", "30");
+            heart.setAttribute("viewBox", "0 0 24 24");
+            heart.classList.add('heart');
+
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", "M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z");
+            path.setAttribute("fill", "pink");
+            heart.appendChild(path);
+
+            const container = document.getElementById('hearts-container');
+            
+            // Spread hearts across entire width
+            heart.style.left = `${Math.random() * 100}%`;
+            
+            // Randomize animation duration and delay
+            const duration = 10 + Math.random() * 10;
+            heart.style.animationDuration = `${duration}s`;
+            heart.style.animationDelay = `${Math.random() * 5}s`;
+            
+            // Randomize heart size
+            const size = 20 + Math.random() * 30;
+            heart.setAttribute('width', size);
+            heart.setAttribute('height', size);
+            
+            heart.style.opacity = `${0.3 + Math.random() * 0.7}`;
+
+            container.appendChild(heart);
+
+            // Remove heart after animation
+            setTimeout(() => {
+                container.removeChild(heart);
+            }, (duration + 5) * 1000);
+        }
+
+        // Create hearts more frequently and across the entire page
+        setInterval(createHeart, 200);
+
+        // Rest of the quiz logic remains the same as in the previous implementation
+        function displayQuestion() {
+            const questionEl = document.getElementById('question');
+            const optionsEl = document.getElementById('options');
+            const currentQuizQuestion = quizData.questions[currentQuestion];
+
+            questionEl.textContent = currentQuizQuestion.text;
+            optionsEl.innerHTML = '';
+
+            currentQuizQuestion.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option.text;
+                button.addEventListener('click', () => selectAnswer(option.flower));
+                optionsEl.appendChild(button);
+            });
+        }
+
+        function selectAnswer(flower) {
+            flowerScores[flower]++;
+            currentQuestion++;
+
+            if (currentQuestion < quizData.questions.length) {
+                displayQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            const quizEl = document.getElementById('quiz');
+            const resultEl = document.getElementById('result');
+            quizEl.style.display = 'none';
+
+            const topFlower = Object.keys(flowerScores).reduce((a, b) => 
+                flowerScores[a] > flowerScores[b] ? a : b
+            );
+
+            resultEl.textContent = quizData.results[topFlower].description;
+        }
+
+        // Start the quiz
+        displayQuestion();
+    </script>
+</body>
+</html>
