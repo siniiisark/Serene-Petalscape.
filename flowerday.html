@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lovely Heart Calendar</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Parisienne&display=swap');
+
+        body {
+            font-family: 'Parisienne', cursive;
+            background: linear-gradient(135deg, #fff0f5, #ffe4e1);
+            margin: 0;
+            padding: 20px;
+            color: #8b4513;
+            overflow: hidden;
+        }
+
+        .calendar-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-header h1 {
+            margin: 0;
+            font-size: 3em;
+            color: #ff69b4;
+            text-shadow: 2px 2px 4px rgba(255,105,180,0.3);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            text-align: center;
+        }
+
+        .calendar-day {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-day:hover {
+            transform: scale(1.05);
+            background-color: rgba(255, 192, 203, 0.5);
+        }
+
+        .calendar-day.today {
+            border: 2px solid #ff69b4;
+            font-weight: bold;
+        }
+
+        .heart {
+            position: absolute;
+            pointer-events: none;
+            animation: heart-float 15s linear infinite;
+            opacity: 0.6;
+        }
+
+        @keyframes heart-float {
+            0% { transform: translateX(-100%) translateY(0) rotate(0deg) scale(0.5); }
+            100% { transform: translateX(100vw) translateY(80vh) rotate(360deg) scale(1); }
+        }
+
+        .month-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .month-navigation button {
+            background-color: #ff69b4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: 'Parisienne', cursive;
+            transition: background-color 0.3s ease;
+        }
+
+        .month-navigation button:hover {
+            background-color: #ff1493;
+        }
+    </style>
+</head>
+<body>
+    <audio autoplay loop>
+        <source src="WhatsApp Audio 2024-12-02 at 10.24.56_285dcdeb.mp3" type="audio/mpeg">
+        
+    </audio>
+    <audio autoplay loop>
+        <source src="WhatsApp Audio 2024-12-02 at 10.24.56_285dcdeb.mp3" type="audio/mpeg">
+        
+    </audio>
+    <div id="heart-container"></div>
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <h1 id="current-month-year">Month Year</h1>
+        </div>
+        <div class="calendar-grid" id="calendar-grid">
+            <div>Sun</div>
+            <div>Mon</div>
+            <div>Tue</div>
+            <div>Wed</div>
+            <div>Thu</div>
+            <div>Fri</div>
+            <div>Sat</div>
+        </div>
+        <div class="month-navigation">
+            <button id="prev-month">← Previous</button>
+            <button id="next-month">Next →</button>
+        </div>
+    </div>
+
+    <script>
+        class FlowerCalendar {
+            constructor() {
+                this.currentDate = new Date();
+                this.calendarGrid = document.getElementById('calendar-grid');
+                this.monthYearElement = document.getElementById('current-month-year');
+                this.prevMonthBtn = document.getElementById('prev-month');
+                this.nextMonthBtn = document.getElementById('next-month');
+
+                this.prevMonthBtn.addEventListener('click', () => this.changeMonth(-1));
+                this.nextMonthBtn.addEventListener('click', () => this.changeMonth(1));
+
+                this.renderCalendar();
+                this.createHearts();
+            }
+
+            renderCalendar() {
+                const firstDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1);
+                const lastDay = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 0);
+                
+                this.monthYearElement.textContent = firstDay.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+                // Clear existing days
+                while (this.calendarGrid.children.length > 7) {
+                    this.calendarGrid.removeChild(this.calendarGrid.lastChild);
+                }
+
+                // Add blank days before first day of month
+                for (let i = 0; i < firstDay.getDay(); i++) {
+                    const blankDay = document.createElement('div');
+                    blankDay.classList.add('calendar-day', 'blank');
+                    this.calendarGrid.appendChild(blankDay);
+                }
+
+                // Add days of the month
+                for (let day = 1; day <= lastDay.getDate(); day++) {
+                    const dayElement = document.createElement('div');
+                    dayElement.classList.add('calendar-day');
+                    dayElement.textContent = day;
+
+                    // Highlight today
+                    const today = new Date();
+                    if (day === today.getDate() && 
+                        this.currentDate.getMonth() === today.getMonth() && 
+                        this.currentDate.getFullYear() === today.getFullYear()) {
+                        dayElement.classList.add('today');
+                    }
+
+                    this.calendarGrid.appendChild(dayElement);
+                }
+            }
+
+            changeMonth(delta) {
+                this.currentDate.setMonth(this.currentDate.getMonth() + delta);
+                this.renderCalendar();
+            }
+
+            createHearts() {
+                const heartContainer = document.getElementById('heart-container');
+                
+                function createHeartSVG() {
+                    return `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 100 100">
+                        <path d="M50 35 
+                                 C50 35, 20 10, 35 30 
+                                 C50 50, 50 55, 50 55 
+                                 C50 55, 50 50, 65 30 
+                                 C80 10, 50 35, 50 35" 
+                              fill="pink" stroke="hotpink" stroke-width="3"/>
+                    </svg>
+                    `;
+                }
+
+                // Create 10 hearts
+                for (let i = 0; i < 10; i++) {
+                    const heart = document.createElement('div');
+                    heart.classList.add('heart');
+                    heart.innerHTML = createHeartSVG();
+                    
+                    // Random starting positions and animations
+                    heart.style.left = `${Math.random() * 100}%`;
+                    heart.style.top = `${Math.random() * 100}%`;
+                    heart.style.animationDelay = `${Math.random() * 15}s`;
+                    heart.style.animationDuration = `${15 + Math.random() * 10}s`;
+
+                    heartContainer.appendChild(heart);
+                }
+            }
+        }
+
+        // Initialize calendar
+        new FlowerCalendar();
+    </script>
+</body>
+</html
