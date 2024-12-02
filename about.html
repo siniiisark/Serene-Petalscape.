@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flower Love Website</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Satisfy&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Dancing Script', cursive;
+            background: linear-gradient(130deg, pink, white);
+            position: relative;
+            overflow: hidden;
+        }
+        .container {
+            min-height: calc(100% - 60px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+        h1 {
+            font-family: 'Satisfy', cursive;
+            font-size: 3rem;
+            color: #ff69b4;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .description {
+            max-width: 700px;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .heart {
+            color: red;
+            margin: 0 10px;
+            font-size: 1.5rem;
+        }
+        .background-svg {
+             position: absolute;
+            top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+        z-index: 1;
+         pointer-events: none;
+        }
+        .heart-svg {
+             fill: rgba(255, 105, 180, 0.3);
+            animation: float 6s infinite;
+        }
+     @keyframes float {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <audio autoplay loop>
+        <source src="WhatsApp Audio 2024-12-02 at 10.24.56_285dcdeb.mp3" type="audio/mpeg">
+    </audio>
+
+    <svg class="background-svg" xmlns="http://www.w3.org/2000/svg">
+        <circle class="heart-svg" cx="10%" cy="20%" r="30"/>
+        <circle class="heart-svg" cx="80%" cy="40%" r="20"/>
+        <circle class="heart-svg" cx="50%" cy="10%" r="25"/>
+        <circle class="heart-svg" cx="30%" cy="70%" r="35"/>
+        <circle class="heart-svg" cx="70%" cy="80%" r="15"/>
+    </svg>
+
+    <div class="container">
+        <h1>A Tribute of Love</h1>
+        <div class="description">
+            <p>This website is a heartfelt dedication born from my deep love for flowers. Every petal, every bloom represents a moment of joy, a memory of beauty, and the tender emotions that connect me to my loved ones.</p>
+            <p>Flowers have always been more than just plants to me - they are living poetry, silent storytellers of love, hope, and the delicate beauty of life itself.</p>
+            <p>So I create this space as a personal sanctuary, a digital garden where love blossoms freely, dedicated to myself and those who have touched my heart.</p>
+        </div>
+    
+</body>
+</html>
