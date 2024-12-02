@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <title>Drawing Playground</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         body, html {
             margin: 0;
             padding: 0;
-            height: 100%;
-            overflow: hidden;
+           
+            
             font-family: 'Lucida Handwriting', cursive;
             background: linear-gradient(130deg, pink, white);
             display: flex;
             flex-direction: column;
             align-items: center;
+            touch-action: none; /* Prevent default touch behaviors */
         }
         h1 {
             color: #ff69b4;
@@ -28,6 +30,7 @@
             width: 100%;
             height: calc(100% - 80px);
             cursor: crosshair;
+            touch-action: none;
         }
         #flower-container {
             position: absolute;
@@ -49,10 +52,9 @@
     </style>
 </head>
 <body>
-  <audio autoplay loop>
-    <source src="WhatsApp Audio 2024-12-02 at 10.24.56_285dcdeb.mp3" type="audio/mpeg">
-    
-</audio>
+    <audio autoplay loop id="background-music">
+        <source src="WhatsApp Audio 2024-12-02 at 10.24.56_285dcdeb.mp3" type="audio/mpeg">
+    </audio>
     <h1>Draw Your Flower ✿</h1>
     
     <canvas id="canvas"></canvas>
@@ -65,8 +67,11 @@
         const flowerContainer = document.getElementById('flower-container');
 
         // Set canvas to full window size
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight - 80;
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight - 80;
+        }
+        resizeCanvas();
 
         // Drawing variables
         let isDrawing = false;
@@ -82,32 +87,66 @@
             }
         });
 
-        // Drawing event listeners
+        // Prevent scrolling and zooming
+        document.body.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        // Helper function to get coordinates
+        function getCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            // Handle both mouse and touch events
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
+        // Drawing functions
+        function startDrawing(e) {
+            e.preventDefault();
+            isDrawing = true;
+            const coords = getCoordinates(e);
+            [lastX, lastY] = [coords.x, coords.y];
+        }
+
+        function draw(e) {
+            e.preventDefault();
+            if (!isDrawing) return;
+            
+            const coords = getCoordinates(e);
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(coords.x, coords.y);
+            ctx.strokeStyle = `hsl(${Math.random() * 360}, 50%, 50%)`;
+            ctx.lineWidth = Math.random() * 10;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            
+            [lastX, lastY] = [coords.x, coords.y];
+        }
+
+        function stopDrawing(e) {
+            e.preventDefault();
+            isDrawing = false;
+        }
+
+        // Add event listeners for both mouse and touch
         canvas.addEventListener('mousedown', startDrawing);
         canvas.addEventListener('mousemove', draw);
         canvas.addEventListener('mouseup', stopDrawing);
         canvas.addEventListener('mouseout', stopDrawing);
 
-        function startDrawing(e) {
-            isDrawing = true;
-            [lastX, lastY] = [e.offsetX, e.offsetY];
-        }
-
-        function draw(e) {
-            if (!isDrawing) return;
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(e.offsetX, e.offsetY);
-            ctx.strokeStyle = `hsl(${Math.random() * 360}, 50%, 50%)`;
-            ctx.lineWidth = Math.random() * 10;
-            ctx.lineCap = 'round';
-            ctx.stroke();
-            [lastX, lastY] = [e.offsetX, e.offsetY];
-        }
-
-        function stopDrawing() {
-            isDrawing = false;
-        }
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing, { passive: false });
 
         // Floating Sakura Flowers
         function createSakuraSVG() {
@@ -141,10 +180,7 @@
         createFloatingFlowers(20);
 
         // Responsive canvas
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - 80;
-        });
+        window.addEventListener('resize', resizeCanvas);
     </script>
 </body>
 </html>
