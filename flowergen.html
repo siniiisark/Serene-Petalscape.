@@ -4,183 +4,151 @@
     <meta charset="UTF-8">
     <title>Drawing Playground</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body, html {
             margin: 0;
             padding: 0;
-           
-            
-            font-family: 'Lucida Handwriting', cursive;
+            font-family: 'Pacifico', cursive;
             background: linear-gradient(130deg, pink, white);
             display: flex;
             flex-direction: column;
             align-items: center;
-            touch-action: none; /* Prevent default touch behaviors */
+            touch-action: none;
         }
         h1 {
             color: #ff69b4;
             text-shadow: 2px 2px 4px rgba(255,105,180,0.3);
             margin: 20px 0;
             text-align: center;
+            font-family: 'Roboto', sans-serif;
         }
         #canvas {
-            position: absolute;
-            top: 80px;
-            left: 0;
-            width: 100%;
-            height: calc(100% - 80px);
+            border: 1px solid #ddd;
             cursor: crosshair;
-            touch-action: none;
         }
-        #flower-container {
+        #controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        select, input[type="color"], button {
+            padding: 5px 10px;
+            font-size: 16px;
+        }
+        svg {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-        .flower {
-            position: absolute;
-            opacity: 0.5;
-            animation: float 20s infinite alternate;
-        }
-        @keyframes float {
-            0% { transform: translateY(0) rotate(0deg); }
-            100% { transform: translateY(-50px) rotate(20deg); }
+            bottom: 10px;
+            right: 10px;
+            width: 100px;
+            height: 100px;
         }
     </style>
 </head>
 <body>
-    <audio autoplay loop id="background-music">
-        <source src="WhatsApp Audio 2024-12-02 at 10.24.56_285dcdeb.mp3" type="audio/mpeg">
-    </audio>
-    <h1>Draw Your Flower ✿</h1>
+  <audio autoplay loop>
+    <source src="WhatsApp Audio 2024-12-02 at 10.24.56_285dcdeb.mp3" type="audio/mpeg">
     
+</audio>
+    <h1>Drawing Playground ✿</h1>
+
+    <div id="controls">
+        <label for="color">Color:</label>
+        <input type="color" id="color" value="#ff69b4">
+
+        <label for="shape">Shape:</label>
+        <select id="shape">
+            <option value="freehand">Freehand</option>
+            <option value="line">Line</option>
+            <option value="rectangle">Rectangle</option>
+            <option value="circle">Circle</option>
+        </select>
+
+        <button id="clear">Clear</button>
+    </div>
+
     <canvas id="canvas"></canvas>
-    <div id="flower-container"></div>
+
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path fill="pink" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+    </svg>
 
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        const music = document.getElementById('background-music');
-        const flowerContainer = document.getElementById('flower-container');
+        const colorPicker = document.getElementById('color');
+        const shapeSelector = document.getElementById('shape');
+        const clearButton = document.getElementById('clear');
 
-        // Set canvas to full window size
+        // Set up canvas dimensions
         function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - 80;
+            canvas.width = window.innerWidth * 0.9;
+            canvas.height = window.innerHeight * 0.7;
         }
         resizeCanvas();
 
+        window.addEventListener('resize', resizeCanvas);
+
         // Drawing variables
         let isDrawing = false;
-        let lastX = 0;
-        let lastY = 0;
+        let startX = 0;
+        let startY = 0;
 
-        // Music toggle
-        let isMusicPlaying = false;
-        document.addEventListener('click', () => {
-            if (!isMusicPlaying) {
-                music.play();
-                isMusicPlaying = true;
+        // Start drawing
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            startX = e.offsetX;
+            startY = e.offsetY;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDrawing || shapeSelector.value !== 'freehand') return;
+
+            ctx.strokeStyle = colorPicker.value;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+
+            startX = e.offsetX;
+            startY = e.offsetY;
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (!isDrawing) return;
+            isDrawing = false;
+
+            const endX = e.offsetX;
+            const endY = e.offsetY;
+
+            ctx.strokeStyle = colorPicker.value;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+
+            if (shapeSelector.value === 'line') {
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
+            } else if (shapeSelector.value === 'rectangle') {
+                ctx.strokeRect(startX, startY, endX - startX, endY - startY);
+            } else if (shapeSelector.value === 'circle') {
+                const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
+                ctx.beginPath();
+                ctx.arc(startX, startY, radius, 0, Math.PI * 2);
+                ctx.stroke();
             }
         });
 
-        // Prevent scrolling and zooming
-        document.body.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-        }, { passive: false });
-
-        // Helper function to get coordinates
-        function getCoordinates(e) {
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            
-            // Handle both mouse and touch events
-            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-            
-            return {
-                x: (clientX - rect.left) * scaleX,
-                y: (clientY - rect.top) * scaleY
-            };
-        }
-
-        // Drawing functions
-        function startDrawing(e) {
-            e.preventDefault();
-            isDrawing = true;
-            const coords = getCoordinates(e);
-            [lastX, lastY] = [coords.x, coords.y];
-        }
-
-        function draw(e) {
-            e.preventDefault();
-            if (!isDrawing) return;
-            
-            const coords = getCoordinates(e);
-            
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(coords.x, coords.y);
-            ctx.strokeStyle = `hsl(${Math.random() * 360}, 50%, 50%)`;
-            ctx.lineWidth = Math.random() * 10;
-            ctx.lineCap = 'round';
-            ctx.stroke();
-            
-            [lastX, lastY] = [coords.x, coords.y];
-        }
-
-        function stopDrawing(e) {
-            e.preventDefault();
-            isDrawing = false;
-        }
-
-        // Add event listeners for both mouse and touch
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseout', stopDrawing);
-
-        canvas.addEventListener('touchstart', startDrawing, { passive: false });
-        canvas.addEventListener('touchmove', draw, { passive: false });
-        canvas.addEventListener('touchend', stopDrawing, { passive: false });
-
-        // Floating Sakura Flowers
-        function createSakuraSVG() {
-            const svg = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 100 100">
-                    <path d="M50 50 
-                             C40 30, 20 20, 50 10 
-                             C80 20, 60 30, 50 50
-                             C40 70, 20 80, 50 90
-                             C80 80, 60 70, 50 50" 
-                          fill="pink" stroke="hotpink" stroke-width="2"/>
-                    <circle cx="50" cy="50" r="3" fill="darkpink"/>
-                </svg>
-            `;
-            return svg;
-        }
-
-        function createFloatingFlowers(count) {
-            for (let i = 0; i < count; i++) {
-                const flower = document.createElement('div');
-                flower.classList.add('flower');
-                flower.innerHTML = createSakuraSVG();
-                flower.style.left = `${Math.random() * 100}%`;
-                flower.style.top = `${Math.random() * 100}%`;
-                flower.style.animationDelay = `${Math.random() * 10}s`;
-                flower.style.transform = `rotate(${Math.random() * 360}deg)`;
-                flowerContainer.appendChild(flower);
-            }
-        }
-
-        createFloatingFlowers(20);
-
-        // Responsive canvas
-        window.addEventListener('resize', resizeCanvas);
+        // Clear canvas
+        clearButton.addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
     </script>
 </body>
 </html>
+
