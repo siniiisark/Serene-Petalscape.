@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -95,35 +95,47 @@
         let startX = 0;
         let startY = 0;
 
-        // Start drawing
-        canvas.addEventListener('mousedown', (e) => {
-            isDrawing = true;
-            startX = e.offsetX;
-            startY = e.offsetY;
-        });
+        function getCoordinates(event) {
+            if (event.touches) {
+                const touch = event.touches[0];
+                return { x: touch.clientX - canvas.offsetLeft, y: touch.clientY - canvas.offsetTop };
+            } else {
+                return { x: event.offsetX, y: event.offsetY };
+            }
+        }
 
-        canvas.addEventListener('mousemove', (e) => {
+        // Start drawing
+        function startDraw(event) {
+            isDrawing = true;
+            const coords = getCoordinates(event);
+            startX = coords.x;
+            startY = coords.y;
+        }
+
+        function draw(event) {
             if (!isDrawing || shapeSelector.value !== 'freehand') return;
 
+            const coords = getCoordinates(event);
             ctx.strokeStyle = colorPicker.value;
             ctx.lineWidth = 2;
             ctx.lineCap = 'round';
 
             ctx.beginPath();
             ctx.moveTo(startX, startY);
-            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.lineTo(coords.x, coords.y);
             ctx.stroke();
 
-            startX = e.offsetX;
-            startY = e.offsetY;
-        });
+            startX = coords.x;
+            startY = coords.y;
+        }
 
-        canvas.addEventListener('mouseup', (e) => {
+        function endDraw(event) {
             if (!isDrawing) return;
             isDrawing = false;
 
-            const endX = e.offsetX;
-            const endY = e.offsetY;
+            const coords = getCoordinates(event);
+            const endX = coords.x;
+            const endY = coords.y;
 
             ctx.strokeStyle = colorPicker.value;
             ctx.lineWidth = 2;
@@ -142,7 +154,17 @@
                 ctx.arc(startX, startY, radius, 0, Math.PI * 2);
                 ctx.stroke();
             }
-        });
+        }
+
+        // Event listeners for mouse
+        canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', endDraw);
+
+        // Event listeners for touch
+        canvas.addEventListener('touchstart', (e) => { startDraw(e); e.preventDefault(); });
+        canvas.addEventListener('touchmove', (e) => { draw(e); e.preventDefault(); });
+        canvas.addEventListener('touchend', (e) => { endDraw(e); e.preventDefault(); });
 
         // Clear canvas
         clearButton.addEventListener('click', () => {
@@ -151,4 +173,5 @@
     </script>
 </body>
 </html>
+
 
